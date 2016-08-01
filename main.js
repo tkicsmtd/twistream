@@ -24,19 +24,22 @@ MongoClient.connect('mongodb://10.252.67.42:27017/pipeline', function(err, db) {
 
   function insert(keyword) {
     return function callback(tweet) {
+      tweet['id'] = tweet['id'].toString();
+      tweet['user']['id'] = tweet['user']['id'].toString();
+
       tweet['keyword'] = keyword;
       tweet['timestamp'] = new Date(parseInt(tweet['timestamp_ms']));
       tweet['distinct_id'] = tweet['user']['id'];
-      tweet['user']['_id'] = tweet['user']['id'];
 
-      eventCollection.insert(tweet);
-      userCollection.save(tweet['user']);
-
-      mixpanel.track('twit', tweet);
-      mixpanel.people.set(tweet['user']['id'], tweet['user']);
+      // mixpanel.track('twit', tweet);
+      // mixpanel.people.set(tweet['user']['id'], tweet['user']);
 
       pipeline.track('twit', tweet);
       pipeline.people.set(tweet['user']['id'], tweet['user']);
+
+      tweet['user']['_id'] = tweet['user']['id'];
+      eventCollection.insert(tweet);
+      userCollection.save(tweet['user']);
 
       process.stdout.write('.');
     };
